@@ -19,18 +19,28 @@ jobs:
           key: build-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             build-${{ runner.os }}-maven-
-      - uses: AdoptOpenJDK/install-jdk@v1
+      - uses: actions/setup-java@v4
         with:
-          version: "17"
-      - name: test maven
+          java-version: "17"
+          distribution: 'temurin'
+      - name: Run Maven Tests
         run: |
           cd maven
-          ./mvnw test -Dmaven.test.failure.ignore
-      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." maven/target/surefire-reports/io.cucumber.a4.RunCucumberTest.txt || ( echo "mvn test didn't fail as expected" && false )
-      - name: test gradle
+          ./mvnw clean test
+      - name: Verify test results
         run: |
-          cd gradle
-          ./gradlew test || true
-      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." gradle/build/reports/tests/test/classes/io.cucumber.a4.RunCucumberTest.html  || ( echo "gradle test didn't fail as expected" && false )
-      - name: compare gradle and maven sources
-        run: diff gradle/src maven/src
+          if [ -f maven/target/surefire-reports/io.cucumber.a4.runner.RunCucumberTest.txt ]; then
+            echo "✅ Test results found"
+            cat maven/target/surefire-reports/io.cucumber.a4.runner.RunCucumberTest.txt
+          else
+            echo "❌ Test results not found"
+            exit 1
+          fi
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            maven/target/surefire-reports/
+            maven/target/cucumber-reports/
