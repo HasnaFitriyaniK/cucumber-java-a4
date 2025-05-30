@@ -22,8 +22,18 @@ public class SharedDriver {
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
             options.addArguments("--remote-allow-origins=*");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--window-size=1920,1080");
             
-            // Uncomment for headless execution if needed
+            // Enable headless mode for CI environment
+            String headless = System.getProperty("headless", "false");
+            if ("true".equals(headless) || System.getenv("CI") != null) {
+                options.addArguments("--headless=new");
+                System.out.println("Running in headless mode for CI environment");
+            }
+            
+            // Uncomment for headless execution if needed locally
+            // options.addArguments("--headless=new");
             // options.addArguments("--headless=new");
             
             try {
