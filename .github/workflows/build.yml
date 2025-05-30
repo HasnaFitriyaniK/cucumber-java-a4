@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
@@ -19,23 +20,31 @@ jobs:
           key: build-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             build-${{ runner.os }}-maven-
+            
       - uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: 'temurin'
+          
       - name: Run Maven Tests
         run: |
           cd maven
           ./mvnw clean test
-      - name: Verify test results
+          
+      - name: Check test results
         run: |
-          if [ -f maven/target/surefire-reports/io.cucumber.a4.runner.RunCucumberTest.txt ]; then
-            echo "✅ Test results found"
-            cat maven/target/surefire-reports/io.cucumber.a4.runner.RunCucumberTest.txt
+          echo "Checking test execution results..."
+          cd maven
+          if [ -f target/surefire-reports/TEST-io.cucumber.a4.runner.RunCucumberTest.xml ]; then
+            echo "✅ Tests completed successfully"
+            echo "XML report found"
           else
-            echo "❌ Test results not found"
+            echo "❌ Test XML report not found"
+            echo "Available files in surefire-reports:"
+            ls -la target/surefire-reports/ 2>/dev/null || echo "No surefire-reports directory found"
             exit 1
           fi
+          
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
