@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: 'Build'
+    name: "Build"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,19 +19,18 @@ jobs:
           key: build-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             build-${{ runner.os }}-maven-
-      - uses:
-          AdoptOpenJDK/install-jdk@v1
+      - uses: AdoptOpenJDK/install-jdk@v1
         with:
-          version: '17'
+          version: "17"
       - name: test maven
         run: |
           cd maven
           ./mvnw test -Dmaven.test.failure.ignore
-      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." maven/target/surefire-reports/io.cucumber.skeleton.RunCucumberTest.txt || ( echo "mvn test didn't fail as expected" && false )
+      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." maven/target/surefire-reports/io.cucumber.a4.RunCucumberTest.txt || ( echo "mvn test didn't fail as expected" && false )
       - name: test gradle
         run: |
           cd gradle
           ./gradlew test || true
-      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." gradle/build/reports/tests/test/classes/io.cucumber.skeleton.RunCucumberTest.html  || ( echo "gradle test didn't fail as expected" && false )
+      - run: grep -q "The step 'I wait 1 hour' and 1 other step(s) are undefined." gradle/build/reports/tests/test/classes/io.cucumber.a4.RunCucumberTest.html  || ( echo "gradle test didn't fail as expected" && false )
       - name: compare gradle and maven sources
         run: diff gradle/src maven/src
